@@ -61,7 +61,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
 		}
 
 		response.setSuccessMessage("Your registration has been finished successfully. Please try to login.");
-		return null;
+		return response;
 	}
 
 	private void isUsernameReserved(String userName) {
@@ -73,7 +73,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
 
 	private void isPasswordValid(Password password) {
 		if (password.getPassword().equals(password.getPasswordAgain())) {
-			LOGGER.debug("Given passwords are valid");
+			LOGGER.debug("Given passwords are valid {}", password);
 
 			password.setPassword(getEncodedPassword(password.getPassword()));
 		} else {

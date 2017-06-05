@@ -73,5 +73,9 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>manuscript.test</groupId>
+			<artifactId>manuscript-test</artifactId>
+		</dependency>
 	</dependencies>
 </project>
