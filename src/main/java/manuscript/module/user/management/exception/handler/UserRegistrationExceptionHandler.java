@@ -10,6 +10,8 @@ import manuscript.module.user.management.bean.BasicResponse;
 import manuscript.module.user.management.exception.NameAlreadyReservedException;
 import manuscript.module.user.management.exception.PasswordValidationException;
 import manuscript.module.user.management.exception.SaveUserException;
+import manuscript.module.user.management.exception.UserIsNotAuthenticatedException;
+import manuscript.module.user.management.exception.UserNotFoundException;
 
 @ControllerAdvice
 public class UserRegistrationExceptionHandler {
@@ -35,6 +37,22 @@ public class UserRegistrationExceptionHandler {
 	@ExceptionHandler(SaveUserException.class)
 	@ResponseBody
 	private BasicResponse saveUserException(SaveUserException exception) {
+		BasicResponse response = new BasicResponse();
+		response.setExceptionMessage(exception.getMessage());
+		return response;
+	}
+
+	@ExceptionHandler(UserNotFoundException.class)
+	@ResponseBody
+	private BasicResponse userNotFoundException(UserNotFoundException exception) {
+		BasicResponse response = new BasicResponse();
+		response.setExceptionMessage(exception.getMessage());
+		return response;
+	}
+
+	@ExceptionHandler(UserIsNotAuthenticatedException.class)
+	@ResponseBody
+	private BasicResponse UserIsNotAuthenticatedException(UserIsNotAuthenticatedException exception) {
 		BasicResponse response = new BasicResponse();
 		response.setExceptionMessage(exception.getMessage());
 		return response;
