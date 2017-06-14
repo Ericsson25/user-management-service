@@ -52,8 +52,10 @@ public class PersonalDataSettingsImpl implements PersonalDataSettings {
 
 	@Override
 	public SavePersonalDataResponse savePersonalData(SavePersonalDataRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		SavePersonalDataResponse response = new SavePersonalDataResponse();
+		personalDataSettingsDao.updatePersonalData(request, getUserIdFromContext());
+		response.setSuccessMessage("Your personal data has updated successfully.");
+		return response;
 	}
 
 	@Override
