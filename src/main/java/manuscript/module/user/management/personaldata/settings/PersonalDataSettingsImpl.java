@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import manuscript.module.user.management.academic.disciplines.AcademicDisciplinesDao;
+import manuscript.module.user.management.exception.DisciplinesUpdateException;
 import manuscript.module.user.management.exception.UserIsNotAuthenticatedException;
 import manuscript.module.user.management.request.ChangePasswordRequest;
 import manuscript.module.user.management.request.SavePersonalDataRequest;
@@ -40,18 +41,13 @@ public class PersonalDataSettingsImpl implements PersonalDataSettings {
 	@Override
 	public PersonalDataSettingsPreloadResponse preload() {
 		PersonalDataSettingsPreloadResponse response = new PersonalDataSettingsPreloadResponse();
-		String userId = null;
 
-		if (ManuscriptSecurityContext.getContext() != null) {
-			userId = ManuscriptSecurityContext.getContext().getUserId();
-		} else {
-			throw new UserIsNotAuthenticatedException("User is not authenticated!");
-		}
+		String userId = getUserIdFromContext();
 
 		response.setUser(personalDataSettingsDao.getUserData(userId));
 		response.setAcademicDisciplines(academicDisciplinesDao.getDisciplinesByUserId(userId));
 
-		return null;
+		return response;
 	}
 
 	@Override
@@ -62,14 +58,36 @@ public class PersonalDataSettingsImpl implements PersonalDataSettings {
 
 	@Override
 	public UpdateAcademicDisciplinesResponse updateAcademicDisciplines(UpdateAcademicDisciplinesRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		UpdateAcademicDisciplinesResponse response = new UpdateAcademicDisciplinesResponse();
+		
+		String userId = getUserIdFromContext();
+
+		try{
+			academicDisciplinesDao.updateDisciplinesByUserId(userId, request.getAcademicDisciplines());
+		} catch (Exception exception) {
+			throw new DisciplinesUpdateException("Your academic disciplnes has not been updated. Please try again later.");
+		}
+		
+		response.setSuccessMessage("Your academic disciplines has been updated successfully.");
+		return response;
 	}
 
 	@Override
 	public ChangePasswordResponse changePassword(ChangePasswordRequest request) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	private String getUserIdFromContext() {
+		String userId = null;
+
+		if (ManuscriptSecurityContext.getContext() != null) {
+			userId = ManuscriptSecurityContext.getContext().getUserId();
+		} else {
+			throw new UserIsNotAuthenticatedException("User is not authenticated!");
+		}
+
+		return userId;
 	}
 
 	// @Override
