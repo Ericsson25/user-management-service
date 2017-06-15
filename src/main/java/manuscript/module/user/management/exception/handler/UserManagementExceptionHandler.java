@@ -7,9 +7,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import manuscript.module.user.management.bean.BasicResponse;
+import manuscript.module.user.management.exception.ChangePasswordException;
 import manuscript.module.user.management.exception.DisciplinesUpdateException;
 import manuscript.module.user.management.exception.NameAlreadyReservedException;
 import manuscript.module.user.management.exception.PasswordValidationException;
+import manuscript.module.user.management.exception.PersonalDataSettingsException;
 import manuscript.module.user.management.exception.SaveUserException;
 import manuscript.module.user.management.exception.UserIsNotAuthenticatedException;
 import manuscript.module.user.management.exception.UserNotFoundException;
@@ -62,6 +64,22 @@ public class UserManagementExceptionHandler {
 	@ExceptionHandler(DisciplinesUpdateException.class)
 	@ResponseBody
 	private BasicResponse disciplinesUpdateException(DisciplinesUpdateException exception) {
+		BasicResponse response = new BasicResponse();
+		response.setExceptionMessage(exception.getMessage());
+		return response;
+	}
+
+	@ExceptionHandler(PersonalDataSettingsException.class)
+	@ResponseBody
+	private BasicResponse personalDataSettingsException(PersonalDataSettingsException exception) {
+		BasicResponse response = new BasicResponse();
+		response.setExceptionMessage(exception.getMessage());
+		return response;
+	}
+
+	@ExceptionHandler(ChangePasswordException.class)
+	@ResponseBody
+	private BasicResponse changePasswordException(ChangePasswordException exception) {
 		BasicResponse response = new BasicResponse();
 		response.setExceptionMessage(exception.getMessage());
 		return response;

@@ -2,15 +2,21 @@ package manuscript.module.user.management.personaldata.settings;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import manuscript.module.user.management.academic.disciplines.AcademicDisciplinesDao;
+import manuscript.module.user.management.bean.Password;
+import manuscript.module.user.management.exception.ChangePasswordException;
 import manuscript.module.user.management.exception.DisciplinesUpdateException;
+import manuscript.module.user.management.exception.PasswordValidationException;
+import manuscript.module.user.management.exception.PersonalDataSettingsException;
 import manuscript.module.user.management.exception.UserIsNotAuthenticatedException;
 import manuscript.module.user.management.request.ChangePasswordRequest;
 import manuscript.module.user.management.request.SavePersonalDataRequest;
 import manuscript.module.user.management.request.UpdateAcademicDisciplinesRequest;
+import manuscript.module.user.management.request.UpdatePassword;
 import manuscript.module.user.management.response.ChangePasswordResponse;
 import manuscript.module.user.management.response.PersonalDataSettingsPreloadResponse;
 import manuscript.module.user.management.response.SavePersonalDataResponse;
@@ -53,7 +59,11 @@ public class PersonalDataSettingsImpl implements PersonalDataSettings {
 	@Override
 	public SavePersonalDataResponse savePersonalData(SavePersonalDataRequest request) {
 		SavePersonalDataResponse response = new SavePersonalDataResponse();
-		personalDataSettingsDao.updatePersonalData(request, getUserIdFromContext());
+		try {
+			personalDataSettingsDao.updatePersonalData(request, getUserIdFromContext());
+		} catch (Exception e) {
+			throw new PersonalDataSettingsException("Can't modify your personal data. Please try again later.");
+		}
 		response.setSuccessMessage("Your personal data has updated successfully.");
 		return response;
 	}
@@ -61,23 +71,45 @@ public class PersonalDataSettingsImpl implements PersonalDataSettings {
 	@Override
 	public UpdateAcademicDisciplinesResponse updateAcademicDisciplines(UpdateAcademicDisciplinesRequest request) {
 		UpdateAcademicDisciplinesResponse response = new UpdateAcademicDisciplinesResponse();
-		
+
 		String userId = getUserIdFromContext();
 
-		try{
+		try {
 			academicDisciplinesDao.updateDisciplinesByUserId(userId, request.getAcademicDisciplines());
 		} catch (Exception exception) {
 			throw new DisciplinesUpdateException("Your academic disciplnes has not been updated. Please try again later.");
 		}
-		
+
 		response.setSuccessMessage("Your academic disciplines has been updated successfully.");
 		return response;
 	}
 
 	@Override
 	public ChangePasswordResponse changePassword(ChangePasswordRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		ChangePasswordResponse response = new ChangePasswordResponse();
+
+		String userId = getUserIdFromContext();
+
+		if (!isGivenPasswordAreTheSame(request.getPassword())) {
+			throw new PasswordValidationException("The given password are not matched");
+		}
+
+		if (!isOldPasswordIsTheSameAsSaved(request.getOldPassword())) {
+			throw new PasswordValidationException("The given old password and the stored are not matched.");
+		}
+
+		UpdatePassword updatePassword = new UpdatePassword();
+		updatePassword.setUserId(userId);
+		updatePassword.setEncryptedPassword(getEncodedPassword(request.getPassword().getPassword()));
+
+		try {
+			personalDataSettingsDao.updatePassword(updatePassword);
+		} catch (Exception e) {
+			throw new ChangePasswordException("Can not change your password. Please try again later.");
+		}
+
+		response.setSuccessMessage("Your password has been changed successfully.");
+		return response;
 	}
 
 	private String getUserIdFromContext() {
@@ -92,79 +124,15 @@ public class PersonalDataSettingsImpl implements PersonalDataSettings {
 		return userId;
 	}
 
-	// @Override
-	// public PersonalDataSettingsPreloadResponse preload() {
-	// PersonalDataSettingsPreloadResponse response = new PersonalDataSettingsPreloadResponse();
-	//
-	// AuthenticatedUser authenticatedUser = getAuthenticatedUser();
-	//
-	// response.setUser(personalDataSettingsDao.getUserData(authenticatedUser));
-	// response.setAcademicDisciplines(personalDataSettingsDao.getAcademicDisciplinesByUserId(authenticatedUser.getUserId()));
-	//
-	// return response;
-	// }
-	//
-	// @Override
-	// public SavePersonalDataResponse savePersonalData(SavePersonalDataRequest request) {
-	// SavePersonalDataResponse response = new SavePersonalDataResponse();
-	// personalDataSettingsDao.updatePersonalData(request, getAuthenticatedUser().getUserId());
-	// response.setSuccessMessage("Your personal data has been updated succesfully!");
-	// return response;
-	// }
-	//
-	// @Override
-	// public ChangePasswordResponse changePassword(ChangePasswordRequest request) {
-	// ChangePasswordResponse response = new ChangePasswordResponse();
-	//
-	// if (!isGivenPasswordAreTheSame(request.getPassword())) {
-	// throw new PasswordValidationException("The given password are not matched");
-	// }
-	//
-	// if (!isOldPasswordIsTheSameAsSaved(request.getOldPassword())) {
-	// throw new GivenOldPasswordIsIncorrectException("Your password is worng...");
-	// }
-	//
-	// UpdatePassword updatePassword = new UpdatePassword();
-	// updatePassword.setUserId(getAuthenticatedUser().getUserId());
-	// updatePassword.setEncryptedPassword(getEncodedPassword(request.getPassword().getPassword()));
-	//
-	// personalDataSettingsDao.updatePassword(updatePassword);
-	//
-	// response.setSuccessMessage("Your password has changed successfully!");
-	// return response;
-	// }
-	//
-	// private AuthenticatedUser getAuthenticatedUser() {
-	// if ((AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal() != null) {
-	// return (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-	// }
-	// throw new RuntimeException(); // FIX IT
-	// }
-	//
-	// private boolean isGivenPasswordAreTheSame(Password password) {
-	// if (password.getPassword().equals(password.getPasswordAgain())) {
-	// return true;
-	// }
-	// return false;
-	// }
-	//
-	// private boolean isOldPasswordIsTheSameAsSaved(String oldPassword) {
-	// if (passwordEncoder.matches(oldPassword, personalDataSettingsDao.getPasswordByUserId(getAuthenticatedUser().getUserId()))) {
-	// return true;
-	// }
-	// return false;
-	// }
-	//
-	// private String getEncodedPassword(String password) {
-	// return new BCryptPasswordEncoder().encode(password);
-	// }
-	//
-	// @Override
-	// public UpdateAcademicDisciplinesResponse updateAcademicDisciplines(UpdateAcademicDisciplinesRequest request) {
-	// UpdateAcademicDisciplinesResponse response = new UpdateAcademicDisciplinesResponse();
-	// personalDataSettingsDao.updateAcademicDisciplinesByUserId(request, getAuthenticatedUser().getUserId());
-	// response.setSuccessMessage("Your disciplines has been updated successfully.");
-	// return response;
-	// }
+	private boolean isGivenPasswordAreTheSame(Password password) {
+		return password.getPassword().equals(password.getPasswordAgain()) ? true : false;
+	}
 
+	private boolean isOldPasswordIsTheSameAsSaved(String oldPassword) {
+		return passwordEncoder.matches(oldPassword, personalDataSettingsDao.getPasswordByUserId(getUserIdFromContext())) ? true : false;
+	}
+
+	private String getEncodedPassword(String password) {
+		return new BCryptPasswordEncoder().encode(password);
+	}
 }

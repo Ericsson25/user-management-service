@@ -35,19 +35,19 @@ public class PersonalDataSettingsController {
 	public PersonalDataSettingsPreloadResponse preload() {
 		return personalDataSettings.preload();
 	}
-	
+
 	@RequestMapping("/savepersonaldata")
-	public SavePersonalDataResponse savePersonalData(@RequestBody @Valid SavePersonalDataRequest request){
+	public SavePersonalDataResponse savePersonalData(@RequestBody @Valid SavePersonalDataRequest request) {
 		return personalDataSettings.savePersonalData(request);
 	}
-	
+
 	@RequestMapping("/updatedisciplines")
-	public UpdateAcademicDisciplinesResponse updateAcademicDisciplines(@RequestBody @Valid UpdateAcademicDisciplinesRequest request){
+	public UpdateAcademicDisciplinesResponse updateAcademicDisciplines(@RequestBody @Valid UpdateAcademicDisciplinesRequest request) {
 		return personalDataSettings.updateAcademicDisciplines(request);
 	}
-	
+
 	@RequestMapping("/changepassword")
-	public ChangePasswordResponse changePassword(@RequestBody ChangePasswordRequest request){
+	public ChangePasswordResponse changePassword(@RequestBody @Valid ChangePasswordRequest request) {
 		return personalDataSettings.changePassword(request);
 	}
 }
