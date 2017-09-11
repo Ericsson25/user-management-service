@@ -52,7 +52,7 @@ public class PersonalDataSettingsImpl implements PersonalDataSettings {
 
 		response.setUser(personalDataSettingsDao.getUserData(userId));
 		response.setAcademicDisciplines(academicDisciplinesDao.getDisciplinesByUserId(userId));
-
+		response.getUser().setUserId(userId);
 		return response;
 	}
 
